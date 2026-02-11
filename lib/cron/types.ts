@@ -38,6 +38,7 @@ export const CRON_FIELDS: Record<CronFieldKey, CronField> = {
  * Cronフィールドのキー配列（CRON_FIELDSから導出）
  * Cron式の順序: 分 時 日 月 曜日
  */
+export const CRON_FIELD_KEYS = Object.keys(CRON_FIELDS) as CronFieldKey[];
 
 export type FieldMode = "every" | "interval" | "specific" | "range";
 
