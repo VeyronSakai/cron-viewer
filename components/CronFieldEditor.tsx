@@ -1,0 +1,125 @@
+"use client";
+
+import {
+    CronField,
+    FieldConfig,
+    FieldMode,
+} from "@/lib/cron";
+
+export default function CronFieldEditor({
+                                            field,
+                                            config,
+                                            onChangeField,
+                                        }: {
+    field: CronField;
+    config: FieldConfig;
+    onChangeField: (config: FieldConfig) => void;
+}) {
+    const modes: { value: FieldMode; label: string }[] = [
+        {value: "every", label: `毎${field.label}`},
+        {value: "interval", label: "間隔指定"},
+        {value: "specific", label: "値を指定"},
+        {value: "range", label: "範囲指定"},
+    ];
+
+    const toggleSpecific = (v: number) => {
+        const vals = config.specificValues.includes(v)
+            ? config.specificValues.filter((x) => x !== v)
+            : [...config.specificValues, v];
+        onChangeField({...config, specificValues: vals});
+    };
+
+    const valueCount = field.max - field.min + 1;
+
+    return (
+        <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
+            <h3 className="mb-2 text-base font-bold">{field.label}</h3>
+            <div className="mb-3 flex flex-wrap gap-2">
+                {modes.map((m) => (
+                    <button
+                        key={m.value}
+                        onClick={() => onChangeField({...config, mode: m.value})}
+                        className={`rounded-md px-3 py-1 text-sm transition-colors ${
+                            config.mode === m.value
+                                ? "bg-blue-600 text-white"
+                                : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
+                        }`}
+                    >
+                        {m.label}
+                    </button>
+                ))}
+            </div>
+
+            {config.mode === "interval" && (
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                    <label>開始:</label>
+                    <input
+                        type="number"
+                        min={field.min}
+                        max={field.max}
+                        value={config.intervalStart}
+                        onChange={(e) => onChangeField({
+                            ...config,
+                            intervalStart: parseInt(e.target.value) || field.min
+                        })}
+                        className="w-16 rounded border border-zinc-300 px-2 py-1 dark:border-zinc-600 dark:bg-zinc-800"
+                    />
+                    <label>ごとに:</label>
+                    <input
+                        type="number"
+                        min={1}
+                        max={field.max - field.min + 1}
+                        value={config.intervalValue}
+                        onChange={(e) => onChangeField({...config, intervalValue: parseInt(e.target.value) || 1})}
+                        className="w-16 rounded border border-zinc-300 px-2 py-1 dark:border-zinc-600 dark:bg-zinc-800"
+                    />
+                    <span>{field.label}</span>
+                </div>
+            )}
+
+            {config.mode === "specific" && (
+                <div
+                    className="grid gap-1"
+                    style={{gridTemplateColumns: `repeat(${valueCount > 12 ? 10 : valueCount > 7 ? 6 : Math.min(valueCount, 7)}, minmax(0, 1fr))`}}
+                >
+                    {Array.from({length: valueCount}, (_, i) => field.min + i).map((v) => (
+                        <button
+                            key={v}
+                            onClick={() => toggleSpecific(v)}
+                            className={`rounded px-1 py-1 text-xs transition-colors ${
+                                config.specificValues.includes(v)
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
+                            }`}
+                        >
+                            {field.names ? field.names[v - field.min] : v.toString().padStart(2, "0")}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {config.mode === "range" && (
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                    <input
+                        type="number"
+                        min={field.min}
+                        max={field.max}
+                        value={config.rangeStart}
+                        onChange={(e) => onChangeField({...config, rangeStart: parseInt(e.target.value) || field.min})}
+                        className="w-16 rounded border border-zinc-300 px-2 py-1 dark:border-zinc-600 dark:bg-zinc-800"
+                    />
+                    <span>から</span>
+                    <input
+                        type="number"
+                        min={field.min}
+                        max={field.max}
+                        value={config.rangeEnd}
+                        onChange={(e) => onChangeField({...config, rangeEnd: parseInt(e.target.value) || field.max})}
+                        className="w-16 rounded border border-zinc-300 px-2 py-1 dark:border-zinc-600 dark:bg-zinc-800"
+                    />
+                    <span>まで</span>
+                </div>
+            )}
+        </div>
+    );
+}
