@@ -22,6 +22,7 @@ export default function CronFieldEditor({
         {value: "range", label: "範囲指定"},
     ];
 
+    // 選択値をトグルし、specificValues に追加/削除した結果を親へ反映する。
     const toggleSpecific = (v: number) => {
         const vals = config.specificValues.includes(v)
             ? config.specificValues.filter((x) => x !== v)
