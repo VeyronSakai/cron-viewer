@@ -13,13 +13,13 @@ export type CronField = {
  * Cronフィールドのキー型
  * Cron式の各フィールドを表すリテラル型
  */
-export type CronFieldKey = "分" | "時" | "日" | "月" | "曜日";
+export type CronFieldKey = "minute" | "hour" | "day" | "month" | "day_of_week";
 
 /**
  * Cronフィールドのキー配列（順序を保持するため）
  * Cron式の順序: 分 時 日 月 曜日
  */
-export const CRON_FIELD_KEYS: CronFieldKey[] = ["分", "時", "日", "月", "曜日"];
+export const CRON_FIELD_KEYS: CronFieldKey[] = ["minute", "hour", "day", "month", "day_of_week"];
 
 /**
  * Cronフィールドの定義マップ
@@ -28,18 +28,17 @@ export const CRON_FIELD_KEYS: CronFieldKey[] = ["分", "時", "日", "月", "曜
  * 使用例: CRON_FIELDS["分"], CRON_FIELDS["時"]
  */
 export const CRON_FIELDS: Record<CronFieldKey, CronField> = {
-    "分": {label: "分", min: 0, max: 59},
-    "時": {label: "時", min: 0, max: 23},
-    "日": {label: "日", min: 1, max: 31},
-    "月": {
+    "minute": {label: "分", min: 0, max: 59},
+    "hour": {label: "時", min: 0, max: 23},
+    "day": {label: "日", min: 1, max: 31},
+    "month": {
         label: "月",
         min: 1,
         max: 12,
         names: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
     },
-    "曜日": {label: "曜日", min: 0, max: 6, names: ["日", "月", "火", "水", "木", "金", "土"]},
+    "day_of_week": {label: "曜日", min: 0, max: 6, names: ["日", "月", "火", "水", "木", "金", "土"]},
 };
-
 
 export type FieldMode = "every" | "interval" | "specific" | "range";
 
