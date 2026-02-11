@@ -3,6 +3,8 @@
 import {useState, useCallback} from "react";
 import {
     CRON_FIELDS,
+    CRON_FIELD_KEYS,
+    CronFieldKey,
     FieldConfig,
     defaultFieldConfig,
     buildCronExpression,
@@ -12,25 +14,39 @@ import CronFieldEditor from "@/components/CronFieldEditor";
 
 export default function CronExpressionBuilder() {
     const [configs, setConfigs] = useState<FieldConfig[]>(
-        CRON_FIELDS.map((f) => defaultFieldConfig(f))
+        CRON_FIELD_KEYS.map((key: CronFieldKey) => defaultFieldConfig(CRON_FIELDS[key]))
     );
     const [copied, setCopied] = useState(false);
     const expression = buildCronExpression(configs);
     const description = describeCron(expression);
 
+    /**
+     * 特定のフィールドの設定を更新する関数
+     *
+     * @param index - 更新対象のフィールドのインデックス (0: 分, 1: 時, 2: 日, 3: 月, 4: 曜日)
+     * @param config - 新しいフィールド設定（FieldConfig型）
+     *
+     * useCallbackでメモ化することで、この関数が不必要に再生成されるのを防ぎ、
+     * 子コンポーネント(CronFieldEditor)の不要な再レンダリングを抑制する
+     */
     const updateField = useCallback(
         (index: number, config: FieldConfig) => {
+            // setConfigsの関数形式を使用して、最新の状態(prev)を取得
             setConfigs((prev) => {
+                // スプレッド構文で既存の配列をシャローコピー（イミュータブルな更新のため）
                 const next = [...prev];
+                // 指定されたインデックスの要素のみを新しい設定で置き換え
                 next[index] = config;
+                // 新しい配列を返すことで、Reactが状態の変更を検知して再レンダリングを実行
                 return next;
             });
         },
+        // 依存配列が空なので、この関数はコンポーネントのライフサイクル全体で1度だけ生成される
         []
     );
 
     const handleReset = () => {
-        setConfigs(CRON_FIELDS.map((f) => defaultFieldConfig(f)));
+        setConfigs(CRON_FIELD_KEYS.map((key: CronFieldKey) => defaultFieldConfig(CRON_FIELDS[key])));
     };
 
     const handleCopy = async () => {
@@ -65,12 +81,12 @@ export default function CronExpressionBuilder() {
             </div>
 
             <div className="space-y-3">
-                {CRON_FIELDS.map((field, i) => (
+                {CRON_FIELD_KEYS.map((key: CronFieldKey, i: number) => (
                     <CronFieldEditor
-                        key={i}
-                        field={field}
+                        key={key}
+                        field={CRON_FIELDS[key]}
                         config={configs[i]}
-                        onChangeField={(c) => updateField(i, c)}
+                        onChangeFieldAction={(c) => updateField(i, c)}
                     />
                 ))}
             </div>

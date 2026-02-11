@@ -9,11 +9,11 @@ import {
 export default function CronFieldEditor({
                                             field,
                                             config,
-                                            onChangeField,
+                                            onChangeFieldAction,
                                         }: {
     field: CronField;
     config: FieldConfig;
-    onChangeField: (config: FieldConfig) => void;
+    onChangeFieldAction: (config: FieldConfig) => void;
 }) {
     const modes: { value: FieldMode; label: string }[] = [
         {value: "every", label: `毎${field.label}`},
@@ -26,7 +26,7 @@ export default function CronFieldEditor({
         const vals = config.specificValues.includes(v)
             ? config.specificValues.filter((x) => x !== v)
             : [...config.specificValues, v];
-        onChangeField({...config, specificValues: vals});
+        onChangeFieldAction({...config, specificValues: vals});
     };
 
     const valueCount = field.max - field.min + 1;
@@ -38,7 +38,7 @@ export default function CronFieldEditor({
                 {modes.map((m) => (
                     <button
                         key={m.value}
-                        onClick={() => onChangeField({...config, mode: m.value})}
+                        onClick={() => onChangeFieldAction({...config, mode: m.value})}
                         className={`rounded-md px-3 py-1 text-sm transition-colors ${
                             config.mode === m.value
                                 ? "bg-blue-600 text-white"
@@ -58,7 +58,7 @@ export default function CronFieldEditor({
                         min={field.min}
                         max={field.max}
                         value={config.intervalStart}
-                        onChange={(e) => onChangeField({
+                        onChange={(e) => onChangeFieldAction({
                             ...config,
                             intervalStart: parseInt(e.target.value) || field.min
                         })}
@@ -70,7 +70,7 @@ export default function CronFieldEditor({
                         min={1}
                         max={field.max - field.min + 1}
                         value={config.intervalValue}
-                        onChange={(e) => onChangeField({...config, intervalValue: parseInt(e.target.value) || 1})}
+                        onChange={(e) => onChangeFieldAction({...config, intervalValue: parseInt(e.target.value) || 1})}
                         className="w-16 rounded border border-zinc-300 px-2 py-1 dark:border-zinc-600 dark:bg-zinc-800"
                     />
                     <span>{field.label}</span>
@@ -105,7 +105,10 @@ export default function CronFieldEditor({
                         min={field.min}
                         max={field.max}
                         value={config.rangeStart}
-                        onChange={(e) => onChangeField({...config, rangeStart: parseInt(e.target.value) || field.min})}
+                        onChange={(e) => onChangeFieldAction({
+                            ...config,
+                            rangeStart: parseInt(e.target.value) || field.min
+                        })}
                         className="w-16 rounded border border-zinc-300 px-2 py-1 dark:border-zinc-600 dark:bg-zinc-800"
                     />
                     <span>から</span>
@@ -114,7 +117,10 @@ export default function CronFieldEditor({
                         min={field.min}
                         max={field.max}
                         value={config.rangeEnd}
-                        onChange={(e) => onChangeField({...config, rangeEnd: parseInt(e.target.value) || field.max})}
+                        onChange={(e) => onChangeFieldAction({
+                            ...config,
+                            rangeEnd: parseInt(e.target.value) || field.max
+                        })}
                         className="w-16 rounded border border-zinc-300 px-2 py-1 dark:border-zinc-600 dark:bg-zinc-800"
                     />
                     <span>まで</span>

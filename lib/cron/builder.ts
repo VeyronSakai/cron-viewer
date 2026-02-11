@@ -1,4 +1,4 @@
-import {CronField, FieldConfig, CRON_FIELDS} from "./types";
+import {CronField, FieldConfig, CRON_FIELDS, CRON_FIELD_KEYS} from "./types";
 
 export function defaultFieldConfig(field: CronField): FieldConfig {
     return {
@@ -31,5 +31,5 @@ export function fieldConfigToExpression(config: FieldConfig, field: CronField): 
 }
 
 export function buildCronExpression(configs: FieldConfig[]): string {
-    return configs.map((c, i) => fieldConfigToExpression(c, CRON_FIELDS[i])).join(" ");
+    return configs.map((c, i) => fieldConfigToExpression(c, CRON_FIELDS[CRON_FIELD_KEYS[i]])).join(" ");
 }
