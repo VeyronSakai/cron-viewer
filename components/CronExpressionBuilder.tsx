@@ -3,6 +3,8 @@
 import {useState, useCallback} from "react";
 import {
     CRON_FIELDS,
+    CRON_FIELD_KEYS,
+    CronFieldKey,
     FieldConfig,
     defaultFieldConfig,
     buildCronExpression,
@@ -11,32 +13,52 @@ import {
 import CronFieldEditor from "@/components/CronFieldEditor";
 
 export default function CronExpressionBuilder() {
-    const [configs, setConfigs] = useState<FieldConfig[]>(
-        CRON_FIELDS.map((f) => defaultFieldConfig(f))
-    );
+    // CRON_FIELD_KEYS の順序に合わせてデフォルト設定を生成する。
+    // reduce で Record を組み立て、各フィールドの初期値を埋める。
+    const createDefaultConfigs = (): Record<CronFieldKey, FieldConfig> =>
+        CRON_FIELD_KEYS.reduce(
+            (acc, key) => {
+                acc[key] = defaultFieldConfig(CRON_FIELDS[key]);
+                return acc;
+            },
+            {} as Record<CronFieldKey, FieldConfig>
+        );
+
+    const [configs, setConfigs] = useState<Record<CronFieldKey, FieldConfig>>(createDefaultConfigs);
     const [copied, setCopied] = useState(false);
+    // 画面表示用に、現在の設定から式と説明文を毎レンダーで導出する。
     const expression = buildCronExpression(configs);
     const description = describeCron(expression);
 
+    /**
+     * 特定のフィールドの設定を更新する関数
+     *
+     * @param key - 更新対象のフィールドのキー
+     * @param config - 新しいフィールド設定（FieldConfig型）
+     *
+     * useCallbackでメモ化することで、この関数が不必要に再生成されるのを防ぎ、
+     * 子コンポーネント(CronFieldEditor)の不要な再レンダリングを抑制する
+     */
     const updateField = useCallback(
-        (index: number, config: FieldConfig) => {
-            setConfigs((prev) => {
-                const next = [...prev];
-                next[index] = config;
-                return next;
-            });
+        (key: CronFieldKey, config: FieldConfig) => {
+            setConfigs((prev) => ({
+                ...prev,
+                [key]: config,
+            }));
         },
         []
     );
 
     const handleReset = () => {
-        setConfigs(CRON_FIELDS.map((f) => defaultFieldConfig(f)));
+        // ボタン押下時は全フィールドを初期値に戻す。
+        setConfigs(createDefaultConfigs());
     };
 
     const handleCopy = async () => {
+        // コピー完了メッセージは短時間のみ表示する。
         await navigator.clipboard.writeText(expression);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setTimeout(() => setCopied(false), 1000);
     };
 
     return (
@@ -65,12 +87,12 @@ export default function CronExpressionBuilder() {
             </div>
 
             <div className="space-y-3">
-                {CRON_FIELDS.map((field, i) => (
+                {CRON_FIELD_KEYS.map((key: CronFieldKey) => (
                     <CronFieldEditor
-                        key={i}
-                        field={field}
-                        config={configs[i]}
-                        onChangeField={(c) => updateField(i, c)}
+                        key={key}
+                        field={CRON_FIELDS[key]}
+                        config={configs[key]}
+                        onChangeFieldAction={(c) => updateField(key, c)}
                     />
                 ))}
             </div>
