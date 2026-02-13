@@ -1,4 +1,4 @@
-import {CronField, FieldConfig, CRON_FIELDS, CRON_FIELD_KEYS} from "./types";
+import {CronField, FieldConfig, CRON_FIELDS, CRON_FIELD_KEYS, CronFieldKey} from "./types";
 
 export function defaultFieldConfig(field: CronField): FieldConfig {
     return {
@@ -21,7 +21,10 @@ export function fieldConfigToExpression(config: FieldConfig, field: CronField): 
             }
             return `${config.intervalStart}/${config.intervalValue}`;
         case "specific":
-            if (config.specificValues.length === 0) return "*";
+            if (config.specificValues.length === 0) {
+                return "*";
+            }
+
             return [...config.specificValues].sort((a, b) => a - b).join(",");
         case "range":
             return `${config.rangeStart}-${config.rangeEnd}`;
@@ -30,6 +33,8 @@ export function fieldConfigToExpression(config: FieldConfig, field: CronField): 
     }
 }
 
-export function buildCronExpression(configs: FieldConfig[]): string {
-    return configs.map((c, i) => fieldConfigToExpression(c, CRON_FIELDS[CRON_FIELD_KEYS[i]])).join(" ");
+export function buildCronExpression(configs: Record<CronFieldKey, FieldConfig>): string {
+    return CRON_FIELD_KEYS
+        .map((key) => fieldConfigToExpression(configs[key], CRON_FIELDS[key]))
+        .join(" ");
 }
