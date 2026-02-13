@@ -77,6 +77,8 @@ export function getNextExecutions(expression: string, count: number = 5): Date[]
     const doms = expandField(domExpr, 1, 31);
     const months = expandField(monExpr, 1, 12);
     const dows = expandField(dowExpr, 0, 6);
+    const isDomWildcard = domExpr === "*";
+    const isDowWildcard = dowExpr === "*";
 
     const results: Date[] = [];
     const now = new Date();
@@ -92,13 +94,21 @@ export function getNextExecutions(expression: string, count: number = 5): Date[]
         const dom = cursor.getDate();
         const mon = cursor.getMonth() + 1;
         const dow = cursor.getDay();
+        const domMatches = doms.includes(dom);
+        const dowMatches = dows.includes(dow);
+        const dayMatches = isDomWildcard && isDowWildcard
+            ? true
+            : isDomWildcard
+                ? dowMatches
+                : isDowWildcard
+                    ? domMatches
+                    : domMatches || dowMatches;
 
         if (
             minutes.includes(m) &&
             hours.includes(h) &&
-            doms.includes(dom) &&
             months.includes(mon) &&
-            dows.includes(dow)
+            dayMatches
         ) {
             results.push(new Date(cursor));
         }

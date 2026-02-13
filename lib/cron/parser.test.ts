@@ -1,7 +1,11 @@
-import {describe, expect, it} from "vitest";
+import {afterEach, describe, expect, it, vi} from "vitest";
 import {describeCron, getNextExecutions, isValidCron} from "./parser";
 
 describe("parser helpers", () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     it("validates cron expressions", () => {
         expect(isValidCron("*/5 * * * *")).toBe(true);
         expect(isValidCron("invalid cron")).toBe(false);
@@ -28,5 +32,18 @@ describe("parser helpers", () => {
 
     it("returns empty array for invalid cron", () => {
         expect(getNextExecutions("invalid cron", 3)).toEqual([]);
+    });
+
+    it("treats day-of-month and day-of-week as OR when both are restricted", () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 0, 1, 0, 0, 0, 0));
+
+        const dates = getNextExecutions("0 0 31 2 1", 3);
+
+        expect(dates).toHaveLength(3);
+        dates.forEach((date) => {
+            expect(date.getMonth()).toBe(1);
+            expect(date.getDay()).toBe(1);
+        });
     });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import {useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {describeCron, isValidCron, getNextExecutions} from "@/lib/cron";
 
 // 実行候補日時を画面表示用のフォーマットへ変換する。
@@ -12,11 +12,23 @@ function formatDate(d: Date): string {
 
 export default function CronExpressionChecker() {
     const [expression, setExpression] = useState("");
+    const [debouncedExpression, setDebouncedExpression] = useState(expression);
+
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => setDebouncedExpression(expression), 300);
+        return () => window.clearTimeout(timeoutId);
+    }, [expression]);
+
     // 入力式から表示状態（妥当性/説明/次回実行）を都度導出する。
     const valid = expression.trim() !== "" && isValidCron(expression);
     const description = expression.trim() !== "" ? describeCron(expression) : "";
-    // 妥当な式のときだけ次回実行を計算し、無効式では余計な処理を避ける。
-    const nextDates = valid ? getNextExecutions(expression, 5) : [];
+    // 入力が落ち着いてから次回実行を計算し、連続入力中の重い探索を抑える。
+    const nextDates = useMemo(() => {
+        if (!valid || debouncedExpression !== expression) {
+            return [];
+        }
+        return getNextExecutions(expression, 5);
+    }, [debouncedExpression, expression, valid]);
 
     return (
         <section className="space-y-4">

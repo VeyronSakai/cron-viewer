@@ -17,9 +17,10 @@ export type CronFieldKey = "minute" | "hour" | "day" | "month" | "day_of_week";
 
 /**
  * Cronフィールドの定義マップ
- * labelをキーとして、各フィールドの設定にアクセス可能
+ * CronFieldKey（"minute" | "hour" | "day" | "month" | "day_of_week"）をキーとして、
+ * 各フィールドの設定にアクセス可能
  *
- * 使用例: CRON_FIELDS["分"], CRON_FIELDS["時"]
+ * 使用例: CRON_FIELDS["minute"], CRON_FIELDS["hour"]
  */
 export const CRON_FIELDS: Record<CronFieldKey, CronField> = {
     "minute": {label: "分", min: 0, max: 59},
@@ -35,10 +36,16 @@ export const CRON_FIELDS: Record<CronFieldKey, CronField> = {
 };
 
 /**
- * Cronフィールドのキー配列（CRON_FIELDSから導出）
+ * Cronフィールドのキー配列（Cron式の順序を明示的に指定）
  * Cron式の順序: 分 時 日 月 曜日
  */
-export const CRON_FIELD_KEYS = Object.keys(CRON_FIELDS) as CronFieldKey[];
+export const CRON_FIELD_KEYS = [
+    "minute",
+    "hour",
+    "day",
+    "month",
+    "day_of_week",
+] as const satisfies readonly CronFieldKey[];
 
 export type FieldMode = "every" | "interval" | "specific" | "range";
 
