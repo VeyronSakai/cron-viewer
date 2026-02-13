@@ -26,6 +26,7 @@ export default function CronExpressionBuilder() {
 
     const [configs, setConfigs] = useState<Record<CronFieldKey, FieldConfig>>(createDefaultConfigs);
     const [copied, setCopied] = useState(false);
+    // 画面表示用に、現在の設定から式と説明文を毎レンダーで導出する。
     const expression = buildCronExpression(configs);
     const description = describeCron(expression);
 
@@ -49,10 +50,12 @@ export default function CronExpressionBuilder() {
     );
 
     const handleReset = () => {
+        // ボタン押下時は全フィールドを初期値に戻す。
         setConfigs(createDefaultConfigs());
     };
 
     const handleCopy = async () => {
+        // コピー完了メッセージは短時間のみ表示する。
         await navigator.clipboard.writeText(expression);
         setCopied(true);
         setTimeout(() => setCopied(false), 1000);

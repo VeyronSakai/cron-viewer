@@ -3,6 +3,7 @@
 import {useState} from "react";
 import {describeCron, isValidCron, getNextExecutions} from "@/lib/cron";
 
+// 実行候補日時を画面表示用のフォーマットへ変換する。
 function formatDate(d: Date): string {
     const pad = (n: number) => n.toString().padStart(2, "0");
     const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
@@ -11,8 +12,10 @@ function formatDate(d: Date): string {
 
 export default function CronExpressionChecker() {
     const [expression, setExpression] = useState("");
+    // 入力式から表示状態（妥当性/説明/次回実行）を都度導出する。
     const valid = expression.trim() !== "" && isValidCron(expression);
     const description = expression.trim() !== "" ? describeCron(expression) : "";
+    // 妥当な式のときだけ次回実行を計算し、無効式では余計な処理を避ける。
     const nextDates = valid ? getNextExecutions(expression, 5) : [];
 
     return (
@@ -27,6 +30,7 @@ export default function CronExpressionChecker() {
                     className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-2 font-mono text-lg dark:border-zinc-600 dark:bg-zinc-800"
                 />
                 <button
+                    // 解析結果も同時に初期化されるよう入力値のみを空に戻す。
                     onClick={() => setExpression("")}
                     className="rounded-lg border border-zinc-300 px-4 py-2 text-sm hover:bg-zinc-100 dark:border-zinc-600 dark:hover:bg-zinc-700"
                 >
